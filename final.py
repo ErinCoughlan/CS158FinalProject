@@ -5,6 +5,7 @@ from collections import defaultdict
 import echonest.remix.audio as audio
 import pyechonest.config as config
 import pyechonest.track as echotrack
+import pyechonest.song as echosong
 import numpy as np
 import sklearn
 import csv
@@ -48,10 +49,34 @@ for row in reader:
 	songToTrack[song] = track
 
 # Test to determine which data we have access to
-trackId = songToTrack[songs[0]]
+songId = songs[0]
+trackId = songToTrack[songId]
 if trackId != None:
+	s = echosong.Song(songId, buckets=['audio_summary'])
 	t = echotrack.track_from_id(trackId)
-	print t.tempo
+	print s
+	artist = s.artist_name
+	print artist
+	tempo = s.audio_summary["tempo"]
+	print tempo
+	dance = s.audio_summary["danceability"]
+	print dance
+	genre = s.song_type
+	print genre
 
+
+# List of songs for training on
+# [Artist, Tempo, Danceability]
+trainData = []
+for song in songs:
+	#trackId = songToTrack[song]
+	#t = echotrack.track_from_id(trackId)
+	s = echosong.Song(song)
+	print song
+	artist = s.artist_name
+	tempo = s.audio_summary["tempo"]
+	dance = s.audio_summary["danceability"]
+
+	trainData.append([artist, tempo, dance])
 
 
