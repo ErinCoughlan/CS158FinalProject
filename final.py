@@ -6,15 +6,18 @@ import echonest.remix.audio as audio
 import pyechonest.config as config
 import pyechonest.track as echotrack
 import pyechonest.song as echosong
+import pyechonest.util as echoutil
 import numpy as np
 import sklearn
 import csv
+import time
 
 config.ECHO_NEST_API_KEY = "U98ZZRHBZWNWUDKPW"
 data_file = "data/kaggle_visible_evaluation_triplets.txt"
 data_songs = "data/kaggle_songs.txt"
 data_users = "data/kaggle_users.txt"
 data_song_track = "data/taste_profile_song_to_tracks.txt"
+data_subset_song_track = "data/subset_unique_tracks.txt"
 
 data = {}
 data = defaultdict(list)
@@ -38,19 +41,17 @@ for row in reader:
 	users.append(row)
 
 songToTrack = {}
-f = open(data_song_track, 'rt')
-reader = csv.reader(f, delimiter='\t')
+f = open(data_subset_song_track, 'rt')
+reader = csv.reader(f)
 for row in reader:
-	song = row[0]
-	if len(row) == 2:
-		track = row[1]
-	else:
-		track = None
-	songToTrack[song] = track
+	row = row[0].split('<SEP>')
+	track, song, artist, songName = row
+	songToTrack[song] = [track, artist, songName]
 
+"""
 # Test to determine which data we have access to
 songId = songs[0]
-trackId = songToTrack[songId]
+trackId, artist, songName = songToTrack[songId]
 if trackId != None:
 	s = echosong.Song(songId, buckets=['audio_summary'])
 	t = echotrack.track_from_id(trackId)
@@ -63,20 +64,31 @@ if trackId != None:
 	print dance
 	genre = s.song_type
 	print genre
+"""
 
 
 # List of songs for training on
 # [Artist, Tempo, Danceability]
 trainData = []
-for song in songs:
-	#trackId = songToTrack[song]
-	#t = echotrack.track_from_id(trackId)
-	s = echosong.Song(song)
-	print song
-	artist = s.artist_name
-	tempo = s.audio_summary["tempo"]
-	dance = s.audio_summary["danceability"]
-
-	trainData.append([artist, tempo, dance])
+for song, trackInfo in songToTrack.items():
+	trackId, artist, songName = trackInfo
+	while True:
+		try:
+			t = echotrack.track_from_id(trackId)
+			t.get_analysis()
+			tempo = t.tempo
+			dance = t.danceability
+			trainData.append([artist, tempo, dance])
+		except echoutil.EchoNestAPIError: # We exceeded our access limit
+			print "too many accesses per minute - retry in a minute"
+			time.sleep(60)
+			continue
+		except IndexError: # The song wasn't found on echo nest
+			print "index error - skip"
+			break
+		except echoutil.EchoNestIOError: # Unknown error from echo nest
+			print "unknown error - retry"
+			continue
+		break # retry request
 
 
