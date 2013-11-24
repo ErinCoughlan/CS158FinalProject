@@ -1,3 +1,5 @@
+
+
 # returns a Cosine similarity score for p1 and p2
 def sim_cosine(ratings, p1, p2):
 	# get the list of shared_items
