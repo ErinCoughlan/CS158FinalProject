@@ -104,13 +104,22 @@ def analyzeTracks(songToTrack, limit=10000):
 
     return trainData
 
-def process(data):
+def process(trainData, testData):
     """ Takes in a normal array of numerical and categorical attributes
      returns an np array of only numerical values """
 
     # Get lists of categories for each attribute
     cat_vals = {}
-    for row in data:
+    for row in trainData:
+        for i, attr in enumerate(row):
+            # attr is categorical
+            if isinstance(attr,str):
+                if cat_vals.get(i,None) is None:
+                    cat_vals[i] = [attr]
+                else:
+                    cat_vals[i].append(attr)
+
+    for row in testData:
         for i, attr in enumerate(row):
             # attr is categorical
             if isinstance(attr,str):
@@ -127,41 +136,51 @@ def process(data):
         enc = preprocessing.LabelEncoder()
         enc.fit(values)
 
-        for row in data:
+        for row in trainData:
             print row[cati]
             valArr = enc.transform([row[cati]])
             row[cati] = valArr[0]
 
-    print data
-    return data
+        for row in testData:
+            print row[cati]
+            valArr = enc.transform([row[cati]])
+            row[cati] = valArr[0]
+
+    return trainData, testData
 
 
 if __name__ == '__main__':
 
     data, songs, users, songToTrack = getData()
-    trainData = analyzeTracks(songToTrack, 10)
-    print trainData
+    totalData = analyzeTracks(songToTrack, 1000)
+    trainData = totalData[0:900]
+    testData = totalData[900:]
 
+    """
     # numerical test data
     num_data = np.array([[0.1,0.2,0.3],
                         [0.4,0.5,0.6],
                         [0.7,0.8,0.9]])
 
     # categorical test data
-    data = process([['abc', 0.2, 0.3, 'aou'],
-                    ['bge', 0.1, 0.4, 'aou'],
-                    ['def', 0.1, 0.3, 'bbb']])
+    train = [['def', 0.2, 0.3, 'aou'],
+            ['bge', 0.1, 0.4, 'aou'],
+            ['abc', 0.1, 0.3, 'bbb']]
+
+    # NEED TO CONVERT TEST TO SAME NUMERICAL LABELS
+    test = [['abc', 0.2, 0.3, 'aou']]
+    """
+
+    train, test = process(trainData, testData)
 
     #data = process(trainData)
     
     # n_init?
-    kmeans = KMeans(init='k-means++', n_clusters=2, n_init=10)
+    kmeans = KMeans(init='k-means++', n_clusters=100, n_init=10)
 
-    kmeans.fit(data)
+    kmeans.fit(train)
 
     #test = [0.9,0.8,0.9]
-    # NEED TO CONVERT TEST TO SAME NUMERICAL LABELS
-    test = ['abc', 0.2, 0.3, 'aou']
     
     prediction = kmeans.predict(test)
 
