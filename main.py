@@ -2,6 +2,7 @@
 # Machine Learning Final Project
 
 from collections import defaultdict
+from collections import Counter
 from sklearn import preprocessing
 from echonest.remix import audio as audio
 from pyechonest import config as echoconfig
@@ -11,6 +12,7 @@ from pyechonest import util as echoutil
 import numpy as np
 import csv
 import time
+import random
 from algorithms import item_kmeans, user_cf
 import pdb
 import random
@@ -28,11 +30,15 @@ def getData():
     """ Reads in all data files into helpful data structures. """
     data = {}
     data = defaultdict(list)
+    songCount = Counter()
     f = open(data_file, 'rt')
     reader = csv.reader(f, delimiter='\t')
     for row in reader:
         user = row[0]
-        data[user].append(row[1:])
+        song = row[1]
+        count = int(row[2])
+        data[user].append([song, count])
+        songCount[song] += count
 
     songs = []
     f = open(data_songs, 'rt')
@@ -55,7 +61,7 @@ def getData():
         track, song, artist, songName = row
         songToTrack[song] = [track, artist, songName]
 
-    return data, songs, users, songToTrack
+    return data, songs, users, songToTrack, songCount
 
 def getAnalyzedData():
     totalData = []
@@ -111,7 +117,7 @@ def process(trainData, testData = [[]]):
 if __name__ == '__main__':
 
     # grab song data
-    user_song_history, songs, users, songToTrack = getData()
+    user_song_history, songs, users, songToTrack, songCount = getData()
     songData = getAnalyzedData()
 
     # take out the first index of each sublist
