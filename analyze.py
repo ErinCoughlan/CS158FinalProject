@@ -48,7 +48,7 @@ def getData():
     return data, songs, users, songToTrack
 
 
-def analyzeTracks(songToTrack, limit=10000):
+def analyzeTracks(songToTrack):
     """ 
         Creates a list of songs for training. Limit allows us to get
         a smaller dataset for testing purposes. Current dataset is based
@@ -58,7 +58,6 @@ def analyzeTracks(songToTrack, limit=10000):
     data = []
     for song, trackInfo in songToTrack.items():
         trackId, artist, songName = trackInfo
-        if len(data) == limit: break
         while True:
             try:
                 t = echotrack.track_from_id(trackId)
@@ -68,7 +67,7 @@ def analyzeTracks(songToTrack, limit=10000):
                 energy = t.energy
                 speech = t.speechiness
                 acoustic = t.acousticness
-                data.append([artist, tempo, dance, energy, speech, acoustic])
+                data.append([song, artist, tempo, dance, energy, speech, acoustic])
             except echoutil.EchoNestAPIError: # We exceeded our access limit
                 print "too many accesses per minute - retry in a minute"
                 time.sleep(60)
@@ -86,8 +85,8 @@ def analyzeTracks(songToTrack, limit=10000):
 if __name__ == '__main__':
 
     data, songs, users, songToTrack = getData()
-    totalData = analyzeTracks(songToTrack, 10)
+    totalData = analyzeTracks(songToTrack)
 
-    with open("analyzed_data.csv", "wb") as f:
+    with open("data/analyzed_data.csv", "wb") as f:
         writer = csv.writer(f)
         writer.writerows(totalData)

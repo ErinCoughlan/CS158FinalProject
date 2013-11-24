@@ -19,24 +19,8 @@ data_songs = "data/kaggle_songs.txt"
 data_users = "data/kaggle_users.txt"
 data_song_track = "data/taste_profile_song_to_tracks.txt"
 data_subset_song_track = "data/subset_unique_tracks.txt"
+data_analysed_songs = "data/analyzed_data.csv"
 
-"""
-# Test to determine which data we have access to
-songId = songs[0]
-trackId, artist, songName = songToTrack[songId]
-if trackId != None:
-    s = echosong.Song(songId, buckets=['audio_summary'])
-    t = echotrack.track_from_id(trackId)
-    print s
-    artist = s.artist_name
-    print artist
-    tempo = s.audio_summary["tempo"]
-    print tempo
-    dance = s.audio_summary["danceability"]
-    print dance
-    genre = s.song_type
-    print genre
-"""
 
 def getData():
     """ Reads in all data files into helpful data structures. """
@@ -70,6 +54,15 @@ def getData():
         songToTrack[song] = [track, artist, songName]
 
     return data, songs, users, songToTrack
+
+def getAnalyzedData():
+    totalData = []
+    f = open(data_analysed_songs, 'rt')
+    reader = csv.reader(f)
+    for row in reader:
+        totalData.append(row)
+
+    return totalData
 
 def process(trainData, testData):
     """ Takes in a normal array of numerical and categorical attributes
@@ -115,26 +108,9 @@ def process(trainData, testData):
 if __name__ == '__main__':
 
     data, songs, users, songToTrack = getData()
-    totalData = analyzeTracks(songToTrack, 1000)
+    totalData = getAnalyzedData()
     trainData = totalData[0:900]
-    testData = totalData[900:]
-
-    """
-    # numerical test data
-    num_data = np.array([[0.1,0.2,0.3],
-                        [0.4,0.5,0.6],
-                        [0.7,0.8,0.9]])
-
-    # categorical test data
-    train = [['def', 0.2, 0.3, 'aou'],
-            ['bge', 0.1, 0.4, 'aou'],
-            ['abc', 0.1, 0.3, 'bbb']]
-
-    # NEED TO CONVERT TEST TO SAME NUMERICAL LABELS
-    test = [['abc', 0.2, 0.3, 'aou']]
-
-    train, test = process(train, test)
-    """
+    testData = totalData[900:1000]
 
     train, test = process(trainData, testData)
     
