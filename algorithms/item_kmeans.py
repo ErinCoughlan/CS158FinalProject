@@ -16,9 +16,20 @@ def getCentroid(user_history):
     pass
 
 
-def trainKmeans(train_data, num_clusters):
+def trainKmeans(train_data, num_clusters=100):
     ''' returns a kmeans learner based off of train data '''
     pass
 
-def testKmeans(learner, test_data, num_recs):
+def testKmeans(learner, user_song_test_data, user_song_train_data, num_recs=500):
+
+	# for each user in test data calculate centroid
+	
+
+	# feed centroid into learner and find top n recommendations
+	
+
+	# for each user calculate average precision, and then take mean
+	# to get the mAP
+	
+
 	pass

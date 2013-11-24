@@ -12,6 +12,7 @@ import numpy as np
 import csv
 import time
 from algorithms import item_kmeans, user_cf
+import pdb
 
 echoconfig.ECHO_NEST_API_KEY = "U98ZZRHBZWNWUDKPW"
 data_file = "data/kaggle_visible_evaluation_triplets.txt"
@@ -19,7 +20,7 @@ data_songs = "data/kaggle_songs.txt"
 data_users = "data/kaggle_users.txt"
 data_song_track = "data/taste_profile_song_to_tracks.txt"
 data_subset_song_track = "data/subset_unique_tracks.txt"
-data_analysed_songs = "data/analyzed_data.csv"
+data_analysed_songs = "analyzed_data.csv" #TODO fix this
 
 
 def getData():
@@ -64,7 +65,7 @@ def getAnalyzedData():
 
     return totalData
 
-def process(trainData, testData):
+def process(trainData, testData = [[]]):
     """ Takes in a normal array of numerical and categorical attributes
      returns an np array of only numerical values """
 
@@ -90,17 +91,18 @@ def process(trainData, testData):
 
     # Encode each list of category values
     for cati, values in catVals.items():
-        print values
         enc = preprocessing.LabelEncoder()
         enc.fit(values)
 
         for row in trainData:
-            valArr = enc.transform([row[cati]])
-            row[cati] = valArr[0]
+            if cati < len(row)-1: 
+                valArr = enc.transform([row[cati]])
+                row[cati] = valArr[0]
 
         for row in testData:
-            valArr = enc.transform([row[cati]])
-            row[cati] = valArr[0]
+            if cati < len(row)-1: 
+                valArr = enc.transform([row[cati]])
+                row[cati] = valArr[0]
 
     return trainData, testData
 
@@ -108,25 +110,25 @@ def process(trainData, testData):
 if __name__ == '__main__':
 
     # grab song data
-    data, songs, users, songToTrack = getData()
-    totalData = getAnalyzedData()
-    trainData = totalData[0:9]
-    testData = totalData[9:]
-
-    pdb.set_trace()
+    user_song_history, songs, users, songToTrack = getData()
+    songData = getAnalyzedData()
 
     # take out the first index of each sublist
-    trainData = [item.remove(0) for item in trainData ]
-    testData = [item.remove(0) for item in testData ]
+    songData = [item[1:] for item in songData]    
 
-    pdb.set_trace()
-
-    train, test = process(trainData, testData)
+    # process the datasets in case of categorical values
+    songData, _ = process(songData)
     
-    kmeans = KMeans(init='k-means++', n_clusters=100, n_init=10)
+    # for kmeans, take out a random 50% of songs from each user_song_history
+    user_song_history_test = {}
+    for user,song_list in user_song_history.items():
+        user_song_history_test[user] = random.sample(song_list, len(song_list)/2)
 
-    kmeans.fit(train)
-    
-    prediction = kmeans.predict(test)
 
-    print prediction
+
+    # get our giant kmeans learner
+    # kmeans_learner = algorithms.trainKmeans(songData) #TODO change num_clusters    
+
+
+
+    # kmeans_results = algorithms.testKmeans(kmeans_learner,
