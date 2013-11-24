@@ -2,7 +2,6 @@
 # Machine Learning Final Project
 
 from collections import defaultdict
-from sklearn.cluster import KMeans
 from sklearn import preprocessing
 from echonest.remix import audio as audio
 from pyechonest import config as echoconfig
@@ -12,6 +11,7 @@ from pyechonest import util as echoutil
 import numpy as np
 import csv
 import time
+from algorithms import item_kmeans, user_cf
 
 echoconfig.ECHO_NEST_API_KEY = "U98ZZRHBZWNWUDKPW"
 data_file = "data/kaggle_visible_evaluation_triplets.txt"
@@ -114,27 +114,17 @@ def process(trainData, testData):
 
 if __name__ == '__main__':
 
+    # grab song data
     data, songs, users, songToTrack = getData()
     totalData = analyzeTracks(songToTrack, 1000)
     trainData = totalData[0:900]
     testData = totalData[900:]
 
-    """
-    # numerical test data
-    num_data = np.array([[0.1,0.2,0.3],
-                        [0.4,0.5,0.6],
-                        [0.7,0.8,0.9]])
+    # take out the first index of each sublist
+    trainData = [item.remove(0) for item in trainData ]
+    testData = [item.remove(0) for item in testData ]
 
-    # categorical test data
-    train = [['def', 0.2, 0.3, 'aou'],
-            ['bge', 0.1, 0.4, 'aou'],
-            ['abc', 0.1, 0.3, 'bbb']]
-
-    # NEED TO CONVERT TEST TO SAME NUMERICAL LABELS
-    test = [['abc', 0.2, 0.3, 'aou']]
-
-    train, test = process(train, test)
-    """
+    pdb.set_trace()
 
     train, test = process(trainData, testData)
     
