@@ -19,24 +19,8 @@ data_songs = "data/kaggle_songs.txt"
 data_users = "data/kaggle_users.txt"
 data_song_track = "data/taste_profile_song_to_tracks.txt"
 data_subset_song_track = "data/subset_unique_tracks.txt"
+data_analysed_songs = "data/analyzed_data.csv"
 
-"""
-# Test to determine which data we have access to
-songId = songs[0]
-trackId, artist, songName = songToTrack[songId]
-if trackId != None:
-    s = echosong.Song(songId, buckets=['audio_summary'])
-    t = echotrack.track_from_id(trackId)
-    print s
-    artist = s.artist_name
-    print artist
-    tempo = s.audio_summary["tempo"]
-    print tempo
-    dance = s.audio_summary["danceability"]
-    print dance
-    genre = s.song_type
-    print genre
-"""
 
 def getData():
     """ Reads in all data files into helpful data structures. """
@@ -70,6 +54,15 @@ def getData():
         songToTrack[song] = [track, artist, songName]
 
     return data, songs, users, songToTrack
+
+def getAnalyzedData():
+    totalData = []
+    f = open(data_analysed_songs, 'rt')
+    reader = csv.reader(f)
+    for row in reader:
+        totalData.append(row)
+
+    return totalData
 
 def process(trainData, testData):
     """ Takes in a normal array of numerical and categorical attributes
@@ -116,9 +109,11 @@ if __name__ == '__main__':
 
     # grab song data
     data, songs, users, songToTrack = getData()
-    totalData = analyzeTracks(songToTrack, 1000)
-    trainData = totalData[0:900]
-    testData = totalData[900:]
+    totalData = getAnalyzedData()
+    trainData = totalData[0:9]
+    testData = totalData[9:]
+
+    pdb.set_trace()
 
     # take out the first index of each sublist
     trainData = [item.remove(0) for item in trainData ]
