@@ -71,78 +71,41 @@ def getData():
 
     return data, songs, users, songToTrack
 
-
-def analyzeTracks(songToTrack, limit=10000):
-    """ 
-        Creates a list of songs for training. Limit allows us to get
-        a smaller dataset for testing purposes. Current dataset is based
-        on [Artist, Tempo, Danceability]
-    """
-
-    trainData = []
-    for song, trackInfo in songToTrack.items():
-        trackId, artist, songName = trackInfo
-        if len(trainData) == limit: break
-        while True:
-            try:
-                t = echotrack.track_from_id(trackId)
-                t.get_analysis()
-                tempo = t.tempo
-                dance = t.danceability
-                trainData.append([artist, tempo, dance])
-            except echoutil.EchoNestAPIError: # We exceeded our access limit
-                print "too many accesses per minute - retry in a minute"
-                time.sleep(60)
-                continue
-            except IndexError: # The song wasn't found on echo nest
-                print "index error - skip"
-                break
-            except echoutil.EchoNestIOError: # Unknown error from echo nest
-                print "unknown error - retry"
-                continue
-            break # retry request
-
-    return trainData
-
 def process(trainData, testData):
     """ Takes in a normal array of numerical and categorical attributes
      returns an np array of only numerical values """
 
     # Get lists of categories for each attribute
-    cat_vals = {}
+    catVals = {}
     for row in trainData:
         for i, attr in enumerate(row):
             # attr is categorical
             if isinstance(attr,str):
-                if cat_vals.get(i,None) is None:
-                    cat_vals[i] = [attr]
+                if catVals.get(i,None) is None:
+                    catVals[i] = [attr]
                 else:
-                    cat_vals[i].append(attr)
+                    catVals[i].append(attr)
 
     for row in testData:
         for i, attr in enumerate(row):
             # attr is categorical
             if isinstance(attr,str):
-                if cat_vals.get(i,None) is None:
-                    cat_vals[i] = [attr]
+                if catVals.get(i,None) is None:
+                    catVals[i] = [attr]
                 else:
-                    cat_vals[i].append(attr)
+                    catVals[i].append(attr)
 
     # Encode each list of category values
-    print cat_vals
-
-    for cati, values in cat_vals.items():
+    for cati, values in catVals.items():
         print values
         enc = preprocessing.LabelEncoder()
         enc.fit(values)
 
         for row in trainData:
-            print row[cati]
             valArr = enc.transform([row[cati]])
             row[cati] = valArr[0]
 
         for row in testData:
-            print row[cati]
             valArr = enc.transform([row[cati]])
             row[cati] = valArr[0]
 
@@ -169,18 +132,15 @@ if __name__ == '__main__':
 
     # NEED TO CONVERT TEST TO SAME NUMERICAL LABELS
     test = [['abc', 0.2, 0.3, 'aou']]
+
+    train, test = process(train, test)
     """
 
     train, test = process(trainData, testData)
-
-    #data = process(trainData)
     
-    # n_init?
     kmeans = KMeans(init='k-means++', n_clusters=100, n_init=10)
 
     kmeans.fit(train)
-
-    #test = [0.9,0.8,0.9]
     
     prediction = kmeans.predict(test)
 
