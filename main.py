@@ -113,33 +113,59 @@ def process(trainData, testData = [[]]):
 
     return trainData, testData
 
+def getSmallerSubset(user_song_history):    
+
+    # list of lists of first 1000 users
+    uf = user_song_history.values()[:1000]
+    # get rid of nested list
+    ufx = [x for y in uf for x in y]
+    # get just the songs
+    ufy = [u[0] for u in ufx]
+    #get rid of duplicates
+    ufs = list(set(ufy))
+    # ufs = [[u] for u in ufs]
+     
+    with open("data/kaggle_song_subset.txt", "w") as text_file:
+        for uid in ufs:
+            text_file.write(uid)
+            text_file.write('\n')
+
 
 if __name__ == '__main__':
 
     # grab song data
     user_song_history, songs, users, songToTrack, songCount = getData()
-    songData = getAnalyzedData()
+
+    # truncate our song data, only run once to generate txt
+    getSmallerSubset(user_song_history)
+
+    songDataFull = getAnalyzedData()
+
+    # user_song_history of first 1000 users
+    ufkeys = user_song_history.keys()[:1000]
+    user_song_history_subset = {}
+    for key in ufkeys:
+        user_song_history_subset[key] = user_song_history[key]
 
     # take out the first index of each sublist
     # get rid of artist too
-    songData = [item[2:] for item in songData]    
+    songData = [item[2:] for item in songDataFull]    
 
     # process the datasets in case of categorical values
     songData, _ = process(songData)
     
     # for kmeans, take out a random 50% of songs from each user_song_history
     user_song_history_test = {}
-    for user,song_list in user_song_history.items():
+    for user,song_list in user_song_history_subset.items():
         user_song_history_test[user] = random.sample(song_list, len(song_list)/2)
 
     # take out user_song_history_test items from user_song_history
     user_song_history_train = {}
     for user,song_list in user_song_history_test.items():
-        user_song_history_train[user] = [song for song in user_song_history[user] if song not in user_song_history_test[user]]
+        user_song_history_train[user] = [song for song in user_song_history_subset[user] if song not in user_song_history_test[user]]
 
     # get our giant kmeans learner
-    kmeans_learner = algorithms.trainKmeans(songData) #TODO change num_clusters    
+    kmeans_learner = item_kmeans.trainKmeans(songData)  
 
-
-
-    # kmeans_results = algorithms.testKmeans(kmeans_learner,
+    # 
+    kmeans_results = item_kmeans.testKmeans(kmeans_learner, songDataFull, user_song_history_test, user_song_history_train)
