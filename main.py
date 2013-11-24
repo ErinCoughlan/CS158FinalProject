@@ -12,7 +12,6 @@ from pyechonest import util as echoutil
 import numpy as np
 import csv
 import time
-import random
 from algorithms import item_kmeans, user_cf
 import pdb
 import random
@@ -40,28 +39,7 @@ def getData():
         data[user].append([song, count])
         songCount[song] += count
 
-    songs = []
-    f = open(data_songs, 'rt')
-    reader = csv.reader(f, delimiter=' ')
-    for row in reader:
-        song = row[0]
-        songs.append(song)
-
-    users = []
-    f = open(data_users, 'rt')
-    reader = csv.reader(f)
-    for row in reader:
-        users.append(row)
-
-    songToTrack = {}
-    f = open(data_subset_song_track, 'rt')
-    reader = csv.reader(f)
-    for row in reader:
-        row = row[0].split('<SEP>')
-        track, song, artist, songName = row
-        songToTrack[song] = [track, artist, songName]
-
-    return data, songs, users, songToTrack, songCount
+    return data, songCount
 
 def getAnalyzedData():
     totalData = []
@@ -117,7 +95,7 @@ def process(trainData, testData = [[]]):
 if __name__ == '__main__':
 
     # grab song data
-    user_song_history, songs, users, songToTrack, songCount = getData()
+    user_song_history, songCount = getData()
     songData = getAnalyzedData()
 
     # take out the first index of each sublist
