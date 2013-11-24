@@ -13,6 +13,7 @@ import csv
 import time
 from algorithms import item_kmeans, user_cf
 import pdb
+import random
 
 echoconfig.ECHO_NEST_API_KEY = "U98ZZRHBZWNWUDKPW"
 data_file = "data/kaggle_visible_evaluation_triplets.txt"
@@ -20,7 +21,7 @@ data_songs = "data/kaggle_songs.txt"
 data_users = "data/kaggle_users.txt"
 data_song_track = "data/taste_profile_song_to_tracks.txt"
 data_subset_song_track = "data/subset_unique_tracks.txt"
-data_analysed_songs = "analyzed_data.csv" #TODO fix this
+data_analysed_songs = "data/analyzed_data_2.csv" #TODO fix this
 
 
 def getData():
@@ -114,7 +115,8 @@ if __name__ == '__main__':
     songData = getAnalyzedData()
 
     # take out the first index of each sublist
-    songData = [item[1:] for item in songData]    
+    # get rid of artist too
+    songData = [item[2:] for item in songData]    
 
     # process the datasets in case of categorical values
     songData, _ = process(songData)
@@ -124,10 +126,13 @@ if __name__ == '__main__':
     for user,song_list in user_song_history.items():
         user_song_history_test[user] = random.sample(song_list, len(song_list)/2)
 
-
+    # take out user_song_history_test items from user_song_history
+    user_song_history_train = {}
+    for user,song_list in user_song_history_test.items():
+        user_song_history_train[user] = [song for song in user_song_history[user] if song not in user_song_history_test[user]]
 
     # get our giant kmeans learner
-    # kmeans_learner = algorithms.trainKmeans(songData) #TODO change num_clusters    
+    kmeans_learner = algorithms.trainKmeans(songData) #TODO change num_clusters    
 
 
 
