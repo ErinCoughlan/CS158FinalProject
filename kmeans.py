@@ -1,35 +1,28 @@
 from sklearn.cluster import KMeans
-from sklearn import preprocessing
 import numpy as np
 import pdb
 
-def process(data):
-    ''' takens in normal array of numerical and categorical attributes
-     returns an np array of only numerical values '''
 
-    enc = preprocessing.LabelEncoder()
+def getRecs(learner, num_recs, centroid):
+    ''' returns the top-n recommendations for a given user's
+    centroid based on the learner we give it'''
 
-    # get lists of categories for each attribute
-    cat_vals = {}
-    for row in data:
-        for i, attr in enumerate(row):
-            # attr is categorical
-            if isinstance(attr,str):
-                if cat_vals.get(i,None) is None:
-                    cat_vals[i] = [attr]
-                else:
-                    cat_vals[i].append(attr)
+    pass
 
-    # encode each list of category values
+def getCentroid(user_history):
+    ''' returns the centroid coordinates of a given user,
+    where we pass in a partial listening history '''
+
+    pass
 
 
-    # enc.fit(data[1])
+def trainKmeans(train_data, num_clusters):
+    ''' returns a kmeans learner based off of train data '''
 
-    # result = enc.transform(data)
+def testKmeans(learner, test_data, num_recs):
 
-    # print result
 
-    return "result"
+
 
 
 
