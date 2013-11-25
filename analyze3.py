@@ -41,10 +41,16 @@ def analyzeTracksNoArtist(songToTrack):
     """
 
     data = []
+    skipped = 0
     for song, trackIds in songToTrack.items():
         if len(trackIds) == 0: continue
         trackId = trackIds[0]
+        retryCount = 0
         while True:
+            if retryCount == 10:
+                print "Retried 10 times - skipping"
+                skipped += 1
+                break
             try:
                 t = echotrack.track_from_id(trackId)
                 t.get_analysis()
@@ -57,13 +63,20 @@ def analyzeTracksNoArtist(songToTrack):
             except echoutil.EchoNestAPIError: # We exceeded our access limit
                 print "too many accesses per minute - retry in a minute"
                 time.sleep(60)
+                retryCount += 1
                 continue
             except IndexError: # The song wasn't found on echo nest
                 print "index error - skip"
+                skipped += 1
                 break
             except echoutil.EchoNestIOError: # Unknown error from echo nest
-                print "unknown error - retry"
+                print "IO error - retry"
+                retryCount += 1
                 continue
+            except Exception:
+                print "unknown exception - skip"
+                skipped += 1
+                break
             break # retry request
 
         # Write to file every 1000 analyzes 
@@ -80,6 +93,7 @@ def analyzeTracksNoArtist(songToTrack):
                     f.write(dString[:-1])
                     f.write('\n')
 
+    print "total skipped: ", skipped
     return data
 
 if __name__ == '__main__':
