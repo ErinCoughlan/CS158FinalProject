@@ -66,8 +66,6 @@ if __name__ == '__main__':
     # take out the first index of each sublist (song id)
     songData = [item[1:] for item in songDataFull]    
 
-    pdb.set_trace()
-
     # process the datasets in case of categorical values
     songData, _ = utils.process(songData)
     
@@ -81,8 +79,23 @@ if __name__ == '__main__':
     for user,song_list in user_song_history_test.items():
         user_song_history_train[user] = [song for song in user_song_history_subset[user] if song not in user_song_history_test[user]]
 
+
+    ###### Kmeans ######
+
+
     # get our giant kmeans learner
     kmeans_learner = item_kmeans.trainKmeans(songData)  
 
-    # 
+    # return results of mAP
     kmeans_results = item_kmeans.testKmeans(kmeans_learner, songDataFull, user_song_history_test, user_song_history_train)
+
+
+    ##### User_CF ######
+    
+    
+    pdb.set_trace()
+
+
+
+
+
