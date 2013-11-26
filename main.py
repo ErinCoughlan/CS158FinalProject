@@ -82,9 +82,9 @@ if __name__ == '__main__':
         user_song_history_train[user] = [song for song in user_song_history_subset[user] if song not in user_song_history_test[user]]
 
 
-    songData = np.asarray(songData)
-    songDataNorm = preprocessing.normalize(songData)
-    songDataFullNorm = [songDataFull[i][0] + songDataNorm[i] for i in range(len(songDataFull))]
+    songData = np.asarray(songData).astype(np.float)
+    songDataNorm = preprocessing.normalize(songData).tolist()
+    songDataFullNorm = [[songDataFull[i][0]] + songDataNorm[i] for i in range(len(songDataFull))]
 
     ###### Kmeans ######
 

@@ -13,7 +13,6 @@ def getRecs(learner, num_recs, centroid, song_data_full, song_counts):
     centroid based on the learner we give it'''
 
     cluster = learner.predict(centroid)
-    print cluster
 
     # find all songs in cluster
     cluster_songs = []
@@ -90,7 +89,7 @@ def writeTestData(user_song_test_data):
         writer.writerows(results)
 
 
-def trainKmeans(train_data, num_clusters=100):
+def trainKmeans(train_data, num_clusters=50):
     ''' returns a kmeans learner based off of train data '''
 
     #TODO: experiment with other k-means impl
