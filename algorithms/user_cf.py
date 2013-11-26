@@ -128,25 +128,16 @@ def get_recommendations(ratings,person,num_recs,similarity=sim_cosine):
     # take the top num_recs
     return rankings[0:num_recs]
 
-# function to transform Person, item - > Item, person
-def compose_ratings(ratings):
-    results = {}
-    for person in ratings:
-        for item in ratings[person]:
-            results.setdefault(item,{})
-
-            # flip item and person
-            results[item][person] = ratings[person][item]
-    return results
-
 def getAllRecommendations(user_song_history_train,num_recs=500):
     predicted_results = []
     for user, song_history in user_song_history_train.items():
-        predicted_results.append([user] + user_cf.get_recommendations(user_song_history_train,user,num_recs))
+        score_recs = get_recommendations(user_song_history_train,user,num_recs)
+        recs = [s[1] for s in score_recs]
+        predicted_results.append([user] + recs)
 
     # write predicted to file
     with open(predicted_results_file, "wb") as f:
         writer = csv.writer(f)
-        writer.writerows(results)
+        writer.writerows(predicted_results)
 
 

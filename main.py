@@ -82,18 +82,18 @@ if __name__ == '__main__':
         user_song_history_train[user] = [song for song in user_song_history_subset[user] if song not in user_song_history_test[user]]
 
 
-    songData = np.asarray(songData)
-    songDataNorm = preprocessing.normalize(songData)
-    songDataFullNorm = [songDataFull[i][0] + songDataNorm[i] for i in range(len(songDataFull))]
+    # songData = np.asarray(songData)
+    # songDataNorm = preprocessing.normalize(songData)
+    # songDataFullNorm = [songDataFull[i][0] + songDataNorm[i] for i in range(len(songDataFull))]
 
     ###### Kmeans ######
 
     # get our giant kmeans learner
-    kmeans_learner = item_kmeans.trainKmeans(songDataNorm)  
+    # kmeans_learner = item_kmeans.trainKmeans(songDataNorm)  
 
-    item_kmeans.testKmeans(kmeans_learner, songDataFullNorm, user_song_history_test, user_song_history_train)
+    # item_kmeans.testKmeans(kmeans_learner, songDataFullNorm, user_song_history_test, user_song_history_train)
 
 
     ##### User_CF ######
-    #user_cf.getAllRecommendations(user_song_history_train)
+    user_cf.getAllRecommendations(user_song_history_test)
 

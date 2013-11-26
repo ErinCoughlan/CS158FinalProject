@@ -18,15 +18,15 @@ if __name__ == '__main__':
         songs = row[1:]
         kmeans_predicted_results.append(songs)
 
-    """
+    
     f = open(user_cf_predicted_results_file, 'rt')
     reader = csv.reader(f)
     for row in reader:
         user = row[0]
         songs = row[1:]
-        user_cf_redicted_results.append(songs)
-    """
-    
+        user_cf_predicted_results.append(songs)
+
+        
     f = open(test_results_file, 'rt')
     reader = csv.reader(f)
     for row in reader:
@@ -38,5 +38,5 @@ if __name__ == '__main__':
     print map.kdd_mapk(test_results, kmeans_predicted_results)
 
     print "user_cf"
-    #print map.kdd_mapk(test_results, user_cf_predicted_results)
+    print map.kdd_mapk(test_results, user_cf_predicted_results)
 
