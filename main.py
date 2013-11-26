@@ -82,20 +82,12 @@ if __name__ == '__main__':
 
     ###### Kmeans ######
 
-
     # get our giant kmeans learner
     kmeans_learner = item_kmeans.trainKmeans(songData)  
 
-    # return results of mAP
-    kmeans_results = item_kmeans.testKmeans(kmeans_learner, songDataFull, user_song_history_test, user_song_history_train)
+    item_kmeans.testKmeans(kmeans_learner, songDataFull, user_song_history_test, user_song_history_train)
 
 
     ##### User_CF ######
-    
-    
-    pdb.set_trace()
-
-
-
 
 

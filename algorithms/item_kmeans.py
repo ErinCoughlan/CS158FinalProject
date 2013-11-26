@@ -89,7 +89,7 @@ def writeTestData(user_song_test_data):
         writer.writerows(results)
 
 
-def trainKmeans(train_data, num_clusters=100):
+def trainKmeans(train_data, num_clusters=75):
     ''' returns a kmeans learner based off of train data '''
 
     #TODO: experiment with other k-means impl
@@ -117,6 +117,3 @@ def testKmeans(learner, song_data_full, user_song_test_data, user_song_train_dat
         writer.writerows(results)
 
     writeTestData(user_song_test_data)
-
-    # for each user calculate average precision, and then take mean to get the mAP
-    return map.MeanAveragePrecision(test_results, predicted_results)
