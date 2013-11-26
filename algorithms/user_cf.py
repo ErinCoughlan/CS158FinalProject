@@ -1,5 +1,8 @@
 import pdb
+import csv
 from math import sqrt
+
+predicted_results_file = "data/results/user_cf_predict.csv"
 
 # returns a Cosine similarity score for p1 and p2
 def sim_cosine(ratings, p1, p2):
@@ -83,7 +86,7 @@ def top_matches(ratings,person,n=5,similarity=sim_cosine):
 
 # gets recommendations for a person by using a weighted average
 # of every other user's rankings
-def get_recommendations(ratings,person,similarity=sim_cosine, num_recs=500):
+def get_recommendations(ratings,person,num_recs,similarity=sim_cosine):
     totals = {}
     sim_sums = {}
 
@@ -123,12 +126,7 @@ def get_recommendations(ratings,person,similarity=sim_cosine, num_recs=500):
     rankings.reverse()
 
     # take the top num_recs
-
-    # predict_results = []
-    # for user, song_history in user_song_history_train.items():
-    #     predict_results.append(user + user_cf.get_recommendations(user_song_history_train,user)
-    
-
+    return rankings[0:num_recs]
 
 # function to transform Person, item - > Item, person
 def compose_ratings(ratings):
@@ -140,3 +138,15 @@ def compose_ratings(ratings):
             # flip item and person
             results[item][person] = ratings[person][item]
     return results
+
+def getAllRecommendations(user_song_history_train,num_recs=500):
+    predicted_results = []
+    for user, song_history in user_song_history_train.items():
+        predicted_results.append([user] + user_cf.get_recommendations(user_song_history_train,user,num_recs))
+
+    # write predicted to file
+    with open(predicted_results_file, "wb") as f:
+        writer = csv.writer(f)
+        writer.writerows(results)
+
+

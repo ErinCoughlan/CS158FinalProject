@@ -13,6 +13,7 @@ def getRecs(learner, num_recs, centroid, song_data_full, song_counts):
     centroid based on the learner we give it'''
 
     cluster = learner.predict(centroid)
+    print cluster
 
     # find all songs in cluster
     cluster_songs = []
@@ -89,7 +90,7 @@ def writeTestData(user_song_test_data):
         writer.writerows(results)
 
 
-def trainKmeans(train_data, num_clusters=75):
+def trainKmeans(train_data, num_clusters=100):
     ''' returns a kmeans learner based off of train data '''
 
     #TODO: experiment with other k-means impl
@@ -97,14 +98,14 @@ def trainKmeans(train_data, num_clusters=75):
 
     return kmeans.fit(train_data)
 
-def testKmeans(learner, song_data_full, user_song_test_data, user_song_train_data):
+def testKmeans(learner, song_data_full, user_song_test_data, user_song_train_data, num_recs=500):
 
     results = []
 
     # for each user in test data calculate centroid
     for user,song_history in user_song_train_data.items():
         # get the number of songs in test_data, so num_recs is equal
-        num_recs = len(user_song_test_data[user])
+        #num_recs = len(user_song_test_data[user])
         # feed centroid into learner and find top n recommendations
         centroid = getCentroid(song_history, song_data_full)
         # get similar songs to centroid and append to results
