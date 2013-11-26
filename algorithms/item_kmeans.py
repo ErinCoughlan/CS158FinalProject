@@ -17,7 +17,7 @@ def getCentroid(song_list, song_data):
 
     song_data_dict = {}
     for item in song_data:
-    	song_data_dict[item[0]] = item[2:]
+    	song_data_dict[item[0]] = item[1:]
 
 
     num_song_not_found = 0
