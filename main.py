@@ -12,7 +12,6 @@ from algorithms import item_kmeans, user_cf
 import utils
 
 
-echoconfig.ECHO_NEST_API_KEY = "U98ZZRHBZWNWUDKPW"
 data_file = "data/kaggle_visible_evaluation_triplets.txt"
 data_songs = "data/kaggle_songs.txt"
 data_users = "data/kaggle_users.txt"
