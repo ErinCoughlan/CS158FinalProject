@@ -101,6 +101,11 @@ if __name__ == '__main__':
     uniqueSongs, songToTrackFull = getData()
     totalData = analyzeTracksNoArtist(songToTrackFull)
 
-    with open("data/analyzed_data_subset.csv", "wb") as f:
-        writer = csv.writer(f)
-        writer.writerows(totalData)
+    with open("data/analyzed_data_subset.txt", "w") as f:
+        for d in totalData:
+            # Convert list to string
+            dString = ""
+            for item in d:
+                dString += str(item) + ','
+            f.write(dString[:-1])
+            f.write('\n')
