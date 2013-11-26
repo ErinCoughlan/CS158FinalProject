@@ -89,7 +89,7 @@ def writeTestData(user_song_test_data):
         writer.writerows(results)
 
 
-def trainKmeans(train_data, num_clusters=50):
+def trainKmeans(train_data, num_clusters=100):
     ''' returns a kmeans learner based off of train data '''
 
     #TODO: experiment with other k-means impl
