@@ -3,18 +3,14 @@
 
 from collections import defaultdict
 from collections import Counter
-from sklearn import preprocessing
-from echonest.remix import audio as audio
-from pyechonest import config as echoconfig
-from pyechonest import track as echotrack
-from pyechonest import song as echosong
-from pyechonest import util as echoutil
-import numpy as np
 import csv
 import time
-from algorithms import item_kmeans, user_cf
 import pdb
 import random
+
+from algorithms import item_kmeans, user_cf
+import utils
+
 
 echoconfig.ECHO_NEST_API_KEY = "U98ZZRHBZWNWUDKPW"
 data_file = "data/kaggle_visible_evaluation_triplets.txt"
@@ -22,11 +18,12 @@ data_songs = "data/kaggle_songs.txt"
 data_users = "data/kaggle_users.txt"
 data_song_track = "data/taste_profile_song_to_tracks.txt"
 data_subset_song_track = "data/subset_unique_tracks.txt"
-data_analysed_songs = "data/analyzed_data_2.csv" #TODO fix this
+data_analysed_songs = "data/analyzed_data_subset.csv"
 
 
 def getData():
     """ Reads in all data files into helpful data structures. """
+
     data = {}
     data = defaultdict(list)
     songCount = Counter()
@@ -42,6 +39,8 @@ def getData():
     return data, songCount
 
 def getAnalyzedData():
+    """ Grabs the echonest song data and creates a list of lists """
+
     totalData = []
     f = open(data_analysed_songs, 'rt')
     reader = csv.reader(f)
@@ -50,88 +49,28 @@ def getAnalyzedData():
 
     return totalData
 
-def process(trainData, testData = [[]]):
-    """ Takes in a normal array of numerical and categorical attributes
-     returns an np array of only numerical values """
-
-    # Get lists of categories for each attribute
-    catVals = {}
-    for row in trainData:
-        for i, attr in enumerate(row):
-            # attr is categorical
-            if isinstance(attr,str):
-                if catVals.get(i,None) is None:
-                    catVals[i] = [attr]
-                else:
-                    catVals[i].append(attr)
-
-    for row in testData:
-        for i, attr in enumerate(row):
-            # attr is categorical
-            if isinstance(attr,str):
-                if catVals.get(i,None) is None:
-                    catVals[i] = [attr]
-                else:
-                    catVals[i].append(attr)
-
-    # Encode each list of category values
-    for cati, values in catVals.items():
-        enc = preprocessing.LabelEncoder()
-        enc.fit(values)
-
-        for row in trainData:
-            if cati < len(row)-1: 
-                valArr = enc.transform([row[cati]])
-                row[cati] = valArr[0]
-
-        for row in testData:
-            if cati < len(row)-1: 
-                valArr = enc.transform([row[cati]])
-                row[cati] = valArr[0]
-
-    return trainData, testData
-
-def getSmallerSubset(user_song_history):    
-
-    # list of lists of first 1000 users
-    uf = user_song_history.values()[:1000]
-    # get rid of nested list
-    ufx = [x for y in uf for x in y]
-    # get just the songs
-    ufy = [u[0] for u in ufx]
-    #get rid of duplicates
-    ufs = list(set(ufy))
-    # ufs = [[u] for u in ufs]
-     
-    with open("data/kaggle_song_subset.txt", "w") as text_file:
-        for uid in ufs:
-            text_file.write(uid)
-            text_file.write('\n')
-
 
 if __name__ == '__main__':
 
-    # grab song data
+    # grab user, song data
     user_song_history, songCount = getData()
 
     # truncate our song data, only run once to generate txt
-    # getSmallerSubset(user_song_history)
+    # utils.getSmallerSubset(user_song_history,1000)
 
     # grab our song data from echonest
     songDataFull = getAnalyzedData()
 
     # user_song_history of first 1000 users
-    ufkeys = user_song_history.keys()[:1000]
-    user_song_history_subset = {}
-    for key in ufkeys:
-        user_song_history_subset[key] = user_song_history[key]
+    user_song_history_subset = utils.truncateDict(user_song_history, 1000)
 
-    # take out the first index of each sublist
-    # get rid of artist too
-    songData = [item[2:] for item in songDataFull]    
+    # take out the first index of each sublist (song id)
+    songData = [item[1:] for item in songDataFull]    
+
+    pdb.set_trace()
 
     # process the datasets in case of categorical values
-    songData, _ = process(songData)
+    songData, _ = utils.process(songData)
     
     # for kmeans, take out a random 50% of songs from each user_song_history
     user_song_history_test = {}
