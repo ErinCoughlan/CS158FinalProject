@@ -8,8 +8,10 @@ import csv
 import pdb
 
 echoconfig.ECHO_NEST_API_KEY = "U98ZZRHBZWNWUDKPW"
-data_users_subset = "data/kaggle_users_subset.txt"
-data_songs_subset = "data/kaggle_song_subset.txt"
+#data_users_subset = "data/kaggle_users_subset.txt"
+#data_songs_subset = "data/kaggle_song_subset.txt"
+data_users_subset = "data/kaggle_users_active_subset.txt"
+data_songs_subset = "data/kaggle_song_active_subset.txt"
 data_song_track = "data/taste_profile_song_to_tracks.txt"
 
 

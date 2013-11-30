@@ -63,7 +63,9 @@ def getCentroid(song_list, song_data):
     song_data_filtered = []
     for [song_id,count] in song_list:
         if song_id in song_data_dict.keys():
-            song_data_filtered.append(song_data_dict[song_id])
+            # Weight data towards the more listened to  (more liked) songs
+            for _ in range(count):
+                song_data_filtered.append(song_data_dict[song_id])
         else:
             num_song_not_found += 1
 

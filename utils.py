@@ -18,6 +18,63 @@ def getSmallerSubset(user_song_history, num):
             text_file.write(uid)
             text_file.write('\n')
 
+def getActiveUserSubset(user_song_history, num):
+    """ Creates a subset of the num most active users, meaning most songs
+        listened to """
+
+    # Get a list of users and the number of songs listened to
+    counts = []
+    for user, songList in user_song_history.items():
+        counts.append([len(songList), user])
+
+    # Sort and reverse so highest are first
+    counts.sort()
+    counts.reverse()
+
+    # Get a list of the most active users
+    users = [u for [c, u] in counts[:num]]
+
+    # Get the song data for the users
+    uf = [user_song_history[u] for u in users]
+    # get rid of nested list
+    ufx = [x for y in uf for x in y]
+    # get just the songs
+    ufy = [u[0] for u in ufx]
+    #get rid of duplicates
+    ufs = list(set(ufy))
+    # ufs = [[u] for u in ufs]
+
+    with open("data/kaggle_song_active_subset.txt", "w") as text_file:
+        for uid in ufs:
+            text_file.write(uid)
+            text_file.write('\n')
+
+    with open("data/kaggle_user_active_subset.txt", "w") as text_file:
+        for uid in users:
+            text_file.write(uid)
+            text_file.write('\n')
+
+
+def truncateActiveDict(user_song_history, num):
+    """ user_song_history to a subset of num entries using active users"""
+
+    # Get a list of users and the number of songs listened to
+    counts = []
+    for user, songList in user_song_history.items():
+        counts.append([len(songList), user])
+
+    # Sort and reverse so highest are first
+    counts.sort()
+    counts.reverse()
+    # Get a list of the most active users
+    ufkeys = [u for [c, u] in counts[:num]]
+
+    user_song_history_subset = {}
+    for key in ufkeys:
+        user_song_history_subset[key] = user_song_history[key]
+
+    return user_song_history_subset
+
 def truncateDict(user_song_history, num):
     """ user_song_history to a subset of num entries """
 

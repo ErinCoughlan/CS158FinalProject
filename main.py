@@ -58,12 +58,17 @@ if __name__ == '__main__':
 
     # truncate our song data, only run once to generate txt
     # utils.getSmallerSubset(user_song_history,1000)
+    #utils.getActiveUserSubset(user_song_history,1000)
 
     # grab our song data from echonest
     songDataFull = getAnalyzedData()
+    songDataFull = [item[:-2] for item in songDataFull]
 
     # user_song_history of first 1000 users
-    user_song_history_subset = utils.truncateDict(user_song_history, 1000)
+    #user_song_history_subset = utils.truncateDict(user_song_history, 1000)
+
+    # user_song_history of active 1000 users
+    user_song_history_subset = utils.truncateActiveDict(user_song_history, 1000)
 
     # take out the first index of each sublist (song id)
     songData = [item[1:] for item in songDataFull]    
