@@ -14,6 +14,8 @@ data_users_subset = "data/kaggle_users_active_subset.txt"
 data_songs_subset = "data/kaggle_song_active_subset.txt"
 data_song_track = "data/taste_profile_song_to_tracks.txt"
 
+write_file = "data/analyzed_data_subset.txt"
+
 
 def getData():
     """ Reads in all data files into helpful data structures. """
@@ -86,7 +88,7 @@ def analyzeTracksNoArtist(songToTrack):
             count = len(data)
             print "total analyzed: ", count
 
-            with open("data/analyzed_data_subset.txt", "w") as f:
+            with open(write_file, "w") as f:
                 for d in data:
                     # Convert list to string
                     dString = ""
@@ -103,7 +105,7 @@ if __name__ == '__main__':
     uniqueSongs, songToTrackFull = getData()
     totalData = analyzeTracksNoArtist(songToTrackFull)
 
-    with open("data/analyzed_data_subset.txt", "w") as f:
+    with open(write_file, "w") as f:
         for d in totalData:
             # Convert list to string
             dString = ""
