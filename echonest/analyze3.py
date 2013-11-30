@@ -14,7 +14,8 @@ data_users_subset = "data/kaggle_users_active_subset.txt"
 data_songs_subset = "data/kaggle_song_active_subset.txt"
 data_song_track = "data/taste_profile_song_to_tracks.txt"
 
-write_file = "data/analyzed_data_subset.txt"
+#write_file = "data/analyzed_data_subset.txt"
+write_file = "data/analyzed_data_active_subset.txt"
 
 
 def getData():
