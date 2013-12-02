@@ -16,15 +16,15 @@ PRIOR_COUNT = 10
 PRIOR_CORRELATION = 0
 
 
-class SemicolonValueProtocol(object):
+class CommaValueProtocol(object):
 
     def write(self, key, values):
-        return ';'.join(str(v) for v in values)
+        return ','.join(str(v) for v in values)
 
 
 class ItemSimilarities(MRJob):
 
-    OUTPUT_PROTOCOL = SemicolonValueProtocol
+    OUTPUT_PROTOCOL = CommaValueProtocol
 
     def steps(self):
         return [

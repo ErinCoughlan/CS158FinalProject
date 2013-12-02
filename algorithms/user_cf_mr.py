@@ -16,15 +16,15 @@ PRIOR_COUNT = 10
 PRIOR_CORRELATION = 0
 
 
-class SemicolonValueProtocol(object):
+class CommaValueProtocol(object):
 
     def write(self, key, values):
-        return ';'.join(str(v) for v in values)
+        return ','.join(str(v) for v in values)
 
 
 class UserSimilarities(MRJob):
 
-    OUTPUT_PROTOCOL = SemicolonValueProtocol
+    OUTPUT_PROTOCOL = CommaValueProtocol
 
     def steps(self):
         return [
@@ -60,7 +60,7 @@ class UserSimilarities(MRJob):
 
         yield item_id, (user_count, user_sum, final)
 
-    def pairwise_items(self, user_id, values):
+    def pairwise_items(self, item_id, values):
         '''
         The output drops the item_id from the key entirely, instead it emits
         the pair of users as the key.
@@ -73,7 +73,7 @@ class UserSimilarities(MRJob):
 
         for user1, user2 in combinations(ratings, 2):
             yield (user1[0], user2[0]), \
-                    (user1[1], user2[1])
+                    (user1[1], user2[1], item_id)
 
     def calculate_similarity(self, pair_key, lines):
         '''
@@ -89,39 +89,40 @@ class UserSimilarities(MRJob):
         21,70   0.1,1
         70,21   0.1,1
         '''
-        sum_xx, sum_xy, sum_yy, sum_x, sum_y, n = (0.0, 0.0, 0.0, 0.0, 0.0, 0)
-        user_pair, co_ratings = pair_key, lines
+        sum_xx, sum_xy, sum_yy, sum_x, sum_y, n, item_list = (0.0, 0.0, 0.0, 0.0, 0.0, 0, [])
+        user_pair, co_ratings_id = pair_key, lines
         user_xname, user_yname = user_pair
-        for user_x, user_y in lines:
+        for user_x, user_y, item_id in lines:
             sum_xx += user_x * user_x
             sum_yy += user_y * user_y
             sum_xy += user_x * user_y
             sum_y += user_y
             sum_x += user_x
             n += 1
+            item_list.append(item_id)
 
         cos_sim = cosine(sum_xy, sqrt(sum_xx), sqrt(sum_yy))
 
-        yield (user_xname, user_yname), (cos_sim, n)
+        yield (user_xname, user_yname), (cos_sim, n, item_list)
 
     def calculate_ranking(self, user_keys, values):
         '''
         Emit users with similarity in key for ranking:
 
         '''
-        cos_sim, n = values
+        cos_sim, n, item_list = values
         user_x, user_y = user_keys
         if int(n) > 0:
             yield (user_x, cos_sim), \
-                     (user_y, n)
+                     (user_y, n, item_list)
 
     def top_similar_items(self, key_sim, similar_ns):
         '''
         For each user emit K closest users.
         '''
         user_x, cos_sim = key_sim
-        for user_y, n in similar_ns:
-            yield None, (user_x, user_y, cos_sim, n)
+        for user_y, n, item_list in similar_ns:
+            yield None, (user_x, user_y, cos_sim, n, item_list)
 
 
 if __name__ == '__main__':
