@@ -35,7 +35,7 @@ if __name__ == '__main__':
         test_results.append(songs)
     
     print "kmeans"
-    print map.kdd_mapk(test_results, kmeans_predicted_results)
+    print map.kdd_mapk(test_results, kmeans_predicted_results, 500)
 
     print "user_cf"
     #print map.kdd_mapk(test_results, user_cf_predicted_results)
