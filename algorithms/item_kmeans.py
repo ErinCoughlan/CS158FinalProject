@@ -18,8 +18,9 @@ def getRecs(learner, num_recs, centroid, song_data_full, song_counts):
     cluster_songs = []
     for i, song in enumerate(song_data_full):
         song_id = song[0]
-        if learner.labels_[i] == cluster:
+        if learner.labels_[i] in cluster:
             cluster_songs.append(song_id)
+
 
     # generate counters of total song counts and cluster song counts
     cluster_song_counts = Counter()
@@ -52,7 +53,7 @@ def getCentroid(song_list, song_data):
     ''' returns the centroid coordinates of a given user,
     where we pass in a partial listening history '''
 
-    kmeans = KMeans(init='k-means++', n_clusters=1, n_init=10)
+    kmeans = KMeans(init='k-means++', n_clusters=2, n_init=10)
 
     song_data_dict = {}
     for item in song_data:
