@@ -20,6 +20,7 @@ data_users = "data/kaggle_users.txt"
 data_song_track = "data/taste_profile_song_to_tracks.txt"
 data_subset_song_track = "data/subset_unique_tracks.txt"
 data_analysed_songs = "data/analyzed_data_subset.csv"
+#data_analysed_songs = "data/analyzed_data_active_subset.txt"
 
 
 def getData():
