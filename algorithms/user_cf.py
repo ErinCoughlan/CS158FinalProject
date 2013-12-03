@@ -142,11 +142,11 @@ def compose_ratings(ratings):
 def getAllRecommendations(user_song_history_train,num_recs=500):
     predicted_results = []
     for user, song_history in user_song_history_train.items():
-        predicted_results.append([user] + user_cf.get_recommendations(user_song_history_train,user,num_recs))
+        predicted_results.append([user] + get_recommendations(user_song_history_train,user,num_recs))
 
     # write predicted to file
     with open(predicted_results_file, "wb") as f:
         writer = csv.writer(f)
-        writer.writerows(results)
+        writer.writerows(predicted_results)
 
 

@@ -5,6 +5,7 @@
 from mrjob.job import MRJob
 from similarity import correlation, jaccard, cosine, regularized_correlation
 from math import sqrt
+import pdb
 
 try:
     from itertools import combinations
@@ -19,7 +20,13 @@ PRIOR_CORRELATION = 0
 class CommaValueProtocol(object):
 
     def write(self, key, values):
-        return ','.join(str(v) for v in values)
+        out_values = [str(v).replace("]","") \
+                            .replace("[","") \
+                            .replace("set(","") \
+                            .replace(")","") \
+                            .replace("'","") \
+                            .replace(" ","") for v in values]
+        return ','.join(str(v) for v in out_values)
 
 
 class UserSimilarities(MRJob):
@@ -29,46 +36,50 @@ class UserSimilarities(MRJob):
     def steps(self):
         return [
             self.mr(mapper=self.group_by_item_rating,
-                    reducer=self.count_ratings_users_freq),
-            self.mr(mapper=self.pairwise_items,
+                    reducer=self.get_item_hist),
+            self.mr(mapper=self.map_to_item_id,
+                    reducer=self.count_ratings_items_freq),
+            self.mr(mapper=self.pairwise_users,
                     reducer=self.calculate_similarity),
             self.mr(mapper=self.calculate_ranking,
-                    reducer=self.top_similar_users)]
+                    reducer=self.top_recommendations),
+            self.mr(mapper=self.identity,
+                    reducer=self.group_by_user)]
 
     def group_by_item_rating(self, key, line):
-        '''
-        Emit the item_id and group by its ratings (user and rating)
 
-        '''
         user_id, item_id, rating = line.split('\t')
 
-        yield  item_id, (user_id, float(rating))
+        yield  user_id, (item_id, float(rating))
 
-    def count_ratings_users_freq(self, item_id, values):
-        '''
-        For each item, emit a row containing their user + rating pairs
-        Also emit user rating sum and count for use later steps.
+    def get_item_hist(self, user_id, values):
 
-        '''
+        item_hist = []
+
+        for item_id, rating in values:
+            item_hist.append((item_id,rating))
+
+        yield user_id, item_hist
+
+    def map_to_item_id(self, user_id, item_hist):
+
+        for (item_id, rating) in item_hist: 
+            yield item_id, (user_id,item_hist,rating)
+
+    def count_ratings_items_freq(self, item_id, values):
+
         user_count = 0
         user_sum = 0
         final = []
-        for user_id, rating in values:
+        for user_id, item_hist, rating in values:
             user_count += 1
             user_sum += rating
-            final.append((user_id, rating))
+            final.append(((user_id, item_hist), rating))
 
         yield item_id, (user_count, user_sum, final)
 
-    def pairwise_items(self, item_id, values):
-        '''
-        The output drops the item_id from the key entirely, instead it emits
-        the pair of users as the key.
+    def pairwise_users(self, item_id, values):
 
-        This mapper finds all combinations of user1,user2 pairs for every item,
-        as long as that item was rated by more than one user. The values are the 
-        corresponding ratings of each user.
-        '''
         user_count, user_sum, ratings = values
 
         for user1, user2 in combinations(ratings, 2):
@@ -76,20 +87,8 @@ class UserSimilarities(MRJob):
                     (user1[1], user2[1], item_id)
 
     def calculate_similarity(self, pair_key, lines):
-        '''
-        Sum components of each corating pair across all items who were rated by 
-        both user x and user y, then calculate pairwise pearson similarity and
-        corating counts.  The similarities are normalized to the [0,1] scale
-        because we do a numerical sort.
-
-        19,21   0.4,2
-        21,19   0.4,2
-        19,70   0.6,1
-        70,19   0.6,1
-        21,70   0.1,1
-        70,21   0.1,1
-        '''
-        sum_xx, sum_xy, sum_yy, sum_x, sum_y, n, item_list = (0.0, 0.0, 0.0, 0.0, 0.0, 0, [])
+    
+        sum_xx, sum_xy, sum_yy, sum_x, sum_y, n = (0.0, 0.0, 0.0, 0.0, 0.0, 0)
         user_pair, co_ratings_id = pair_key, lines
         user_xname, user_yname = user_pair
         for user_x, user_y, item_id in lines:
@@ -99,31 +98,62 @@ class UserSimilarities(MRJob):
             sum_y += user_y
             sum_x += user_x
             n += 1
-            item_list.append(item_id)
 
         cos_sim = cosine(sum_xy, sqrt(sum_xx), sqrt(sum_yy))
 
-        yield (user_xname, user_yname), (cos_sim, n, item_list)
+        yield (user_xname, user_yname), (cos_sim, n)
 
     def calculate_ranking(self, user_keys, values):
-        '''
-        Emit users with similarity in key for ranking:
 
-        '''
-        cos_sim, n, item_list = values
+        cos_sim, n = values
         user_x, user_y = user_keys
         if int(n) > 0:
             yield (user_x, cos_sim), \
-                     (user_y, n, item_list)
+                     (user_y, n)
 
-    def top_similar_users(self, key_sim, similar_ns):
-        '''
-        For each user emit K closest users.
-        '''
+    def top_recommendations(self, key_sim, similar_ns):
+
         user_x, cos_sim = key_sim
-        for user_y, n, item_list in similar_ns:
-            yield None, (user_x, user_y, cos_sim, n, item_list)
+        for user_y, n in similar_ns:
 
+            totals = {}
+            sim_sums = {}
+
+            # pdb.set_trace()
+            for rating in user_y[1]:
+                items_x = [x[0] for x in user_x[1]]
+                if rating[0] not in items_x:
+                    # if not, compute totals and sim_sums for each item
+                    totals.setdefault(rating[0],0)
+                    totals[rating[0]] += cos_sim * rating[1]
+
+                    sim_sums.setdefault(rating[0],0)
+                    sim_sums[rating[0]] += cos_sim
+
+            # create the normalized list
+            rankings = [(total/sim_sums[item],item) for item,total in totals.items()]
+
+            # return the sorted list
+            rankings.sort()
+            rankings.reverse()        
+
+            top_recs = [x[1] for x in rankings]
+
+            yield user_x[0],top_recs
+
+    def identity(self, user_id, rankings):
+        yield user_id, rankings
+
+    def group_by_user(self, user_id, rankings):
+
+        all_recs = []
+        for r in rankings:
+            all_recs.append(r)
+
+        recs = set()
+        while len(recs) <= 500 and len(all_recs) > 0:
+            recs.update(all_recs.pop(0))
+        yield None, (user_id,recs)
 
 if __name__ == '__main__':
     UserSimilarities.run()

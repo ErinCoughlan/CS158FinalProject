@@ -14,7 +14,7 @@ from sklearn import preprocessing
 import utils
 
 
-data_file = "data/kaggle_visible_evaluation_triplets.txt"
+data_file = "data/kaggle_sample.csv"
 data_songs = "data/kaggle_songs.txt"
 data_users = "data/kaggle_users.txt"
 data_song_track = "data/taste_profile_song_to_tracks.txt"
@@ -66,16 +66,16 @@ if __name__ == '__main__':
     songDataFull = [item[:-3] for item in songDataFull]
 
     # user_song_history of first 1000 users
-    user_song_history_subset = utils.truncateDict(user_song_history, 1000)
-
+    # user_song_history_subset = utils.truncateDict(user_song_history, 1000)
+    user_song_history_subset = user_song_history
     # user_song_history of active 1000 users
     #user_song_history_subset = utils.truncateActiveDict(user_song_history, 1000)
 
     # take out the first index of each sublist (song id)
-    songData = [item[1:] for item in songDataFull]    
+    # songData = [item[1:] for item in songDataFull]    
 
     # process the datasets in case of categorical values
-    songData, _ = utils.process(songData)
+    # songData, _ = utils.process(songData)
     
     # for kmeans, take out a random 50% of songs from each user_song_history
     user_song_history_test = {}
@@ -88,18 +88,18 @@ if __name__ == '__main__':
         user_song_history_train[user] = [song for song in user_song_history_subset[user] if song not in user_song_history_test[user]]
 
 
-    songData = np.asarray(songData).astype(np.float)
-    songDataNorm = preprocessing.normalize(songData).tolist()
-    songDataFullNorm = [[songDataFull[i][0]] + songDataNorm[i] for i in range(len(songDataFull))]
+    # songData = np.asarray(songData).astype(np.float)
+    # songDataNorm = preprocessing.normalize(songData).tolist()
+    # songDataFullNorm = [[songDataFull[i][0]] + songDataNorm[i] for i in range(len(songDataFull))]
 
     ###### Kmeans ######
 
     # get our giant kmeans learner
-    kmeans_learner = item_kmeans.trainKmeans(songDataNorm)  
+    # kmeans_learner = item_kmeans.trainKmeans(songDataNorm)  
 
-    item_kmeans.testKmeans(kmeans_learner, songDataFullNorm, user_song_history_test, user_song_history_train)
+    # item_kmeans.testKmeans(kmeans_learner, songDataFullNorm, user_song_history_test, user_song_history_train)
 
 
     ##### User_CF ######
-    #user_cf.getAllRecommendations(user_song_history_train)
+    user_cf.getAllRecommendations(user_song_history_train)
 

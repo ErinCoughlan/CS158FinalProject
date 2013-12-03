@@ -36,7 +36,7 @@ class ItemSimilarities(MRJob):
             self.mr(mapper=self.pairwise_items,
                     reducer=self.calculate_similarity),
             self.mr(mapper=self.calculate_ranking,
-                    reducer=self.top_similar_items)]
+                    reducer=self.top_recommendations)]
 
     def group_by_user_rating(self, key, line):
         '''
@@ -158,7 +158,7 @@ class ItemSimilarities(MRJob):
             yield (item_x, cos_sim), \
                      (item_y, n)
 
-    def top_similar_items(self, key_sim, similar_ns):
+    def top_recommendations(self, key_sim, similar_ns):
         '''
         For each item emit K closest items in comma separated file:
 
@@ -166,8 +166,31 @@ class ItemSimilarities(MRJob):
         De La Soul;2Pac;0.4;2
 
         '''
+
         item_x, cos_sim = key_sim
         for item_y, n in similar_ns:
+
+            totals = {}
+            sim_sums = {}
+            for [user_id, rating] in item_y:
+                # check if user_id in item_x's user_hist
+                users_x = [x[0] for x in item_x]
+                if user_id not in users_x:
+                    # if not, compute totals and sim_sums for each item
+                    totals.setdefault(user_id,0)
+                    totals[user_id] += cos_sim * ranking
+
+
+                    sim_sums.setdefault(song,0)
+                    sim_sums[user_id] += sim
+
+            # create the normalized list
+            rankings = [(total/sim_sums[item],item) for item,total in totals.items()]
+
+            # return the sorted list
+            rankings.sort()
+            rankings.reverse()    
+                
             yield None, (item_x, item_y, cos_sim, n)
 
 
