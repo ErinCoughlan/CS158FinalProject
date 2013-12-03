@@ -20,6 +20,7 @@ data_users = "data/kaggle_users.txt"
 data_song_track = "data/taste_profile_song_to_tracks.txt"
 data_subset_song_track = "data/subset_unique_tracks.txt"
 data_analysed_songs = "data/analyzed_data_subset.csv"
+#data_analysed_songs = "data/analyzed_data_active_subset.txt"
 
 
 def getData():
@@ -62,7 +63,7 @@ if __name__ == '__main__':
 
     # grab our song data from echonest
     songDataFull = getAnalyzedData()
-    songDataFull = [item[:-2] for item in songDataFull]
+    songDataFull = [item[:-3] for item in songDataFull]
 
     # user_song_history of first 1000 users
     user_song_history_subset = utils.truncateDict(user_song_history, 1000)
