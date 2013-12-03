@@ -1,4 +1,31 @@
 from sklearn import preprocessing
+from collections import defaultdict
+from collections import Counter
+import random
+import csv
+import pdb
+
+data_file = "data/kaggle_visible_evaluation_triplets.txt"
+train_results = "data/results/user_cf_mr_train.csv"
+predicted_results = "data/results/user_cf_mr_predict.csv"
+test_results = "data/results/user_cf_mr_test.csv"
+
+def getData():
+    """ Reads in all data files into helpful data structures. """
+
+    data = {}
+    data = defaultdict(list)
+    songCount = Counter()
+    f = open(data_file, 'rt')
+    reader = csv.reader(f, delimiter='\t')
+    for row in reader:
+        user = row[0]
+        song = row[1]
+        count = int(row[2])
+        data[user].append([song, count])
+        songCount[song] += count
+
+    return data, songCount
 
 def getSmallerSubset(user_song_history, num):    
     """ takes in user_song_history and writes a subset of it to .txt"""
@@ -126,3 +153,52 @@ def process(trainData, testData = [[]]):
                 row[cati] = valArr[0]
 
     return trainData, testData
+
+
+def writeTrainData(user_song_train_data):
+    """ Get order lists based on song play count for each user in
+    user_song_test_data, and then write to a csv """
+
+    results = user_song_train_data
+    with open(train_results, "wb") as f:
+        writer = csv.writer(f)
+        writer.writerows(results)
+
+def writeTestData(user_song_test_data):
+    """ Get order lists based on song play count for each user in
+    user_song_test_data, and then write to a csv """
+
+    results = []
+    for user, songs in user_song_test_data.items():
+        test_song_counts = Counter()
+        for [song,count] in songs:                        
+            test_song_counts[song] += count
+        top_songs = [song[0] for song in test_song_counts.most_common(len(list(test_song_counts)))]
+        results.append([user] + top_songs)
+
+    with open(test_results, "wb") as f:
+        writer = csv.writer(f)
+        writer.writerows(results)
+
+
+if __name__ == '__main__':
+
+    # grab user, song data
+    user_song_history, songCount = getData()
+
+    user_song_history_subset = truncateDict(user_song_history, 20000)
+
+    user_song_history_test = {}
+    for user,song_list in user_song_history_subset.items():
+        user_song_history_test[user] = random.sample(song_list, len(song_list)/2)
+
+    # take out user_song_history_test items from user_song_history
+    user_song_history_train = []
+    for user,song_list in user_song_history_subset.items():
+        for song in song_list:            
+            if song not in user_song_history_test[user]:
+                user_song_history_train.append([user] + song)
+             
+    writeTestData(user_song_history_test)
+    writeTrainData(user_song_history_train)
+
