@@ -33,7 +33,7 @@ class UserSimilarities(MRJob):
             self.mr(mapper=self.pairwise_items,
                     reducer=self.calculate_similarity),
             self.mr(mapper=self.calculate_ranking,
-                    reducer=self.top_similar_items)]
+                    reducer=self.top_similar_users)]
 
     def group_by_item_rating(self, key, line):
         '''
@@ -116,7 +116,7 @@ class UserSimilarities(MRJob):
             yield (user_x, cos_sim), \
                      (user_y, n, item_list)
 
-    def top_similar_items(self, key_sim, similar_ns):
+    def top_similar_users(self, key_sim, similar_ns):
         '''
         For each user emit K closest users.
         '''

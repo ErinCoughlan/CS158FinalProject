@@ -27,9 +27,12 @@ class ItemSimilarities(MRJob):
     OUTPUT_PROTOCOL = CommaValueProtocol
 
     def steps(self):
+
         return [
-            self.mr(mapper=self.group_by_user_rating,
-                    reducer=self.count_ratings_users_freq),
+            self.mr(mapper=self.group_by_user_rating,   
+                reducer=self.get_item_hist),
+            self.mr(mapper=self.map_to_user_id,
+                reducer=self.count_ratings_users_freq),        
             self.mr(mapper=self.pairwise_items,
                     reducer=self.calculate_similarity),
             self.mr(mapper=self.calculate_ranking,
@@ -51,7 +54,21 @@ class ItemSimilarities(MRJob):
         '''
         user_id, item_id, rating = line.split('\t')
 
-        yield  user_id, (item_id, float(rating))
+        yield  item_id, (user_id, float(rating))
+
+    def get_item_hist(self, item_id, values):
+
+        user_hist = []
+
+        for user_id, rating in values:
+            user_hist.append((user_id,rating))
+
+        yield item_id, user_hist
+
+    def map_to_user_id(self, item_id, user_hist):
+
+        for (user_id, rating) in user_hist:
+            yield user_id, (item_id,user_hist,rating)
 
     def count_ratings_users_freq(self, user_id, values):
         '''
@@ -67,10 +84,10 @@ class ItemSimilarities(MRJob):
         item_count = 0
         item_sum = 0
         final = []
-        for item_id, rating in values:
+        for item_id, user_hist, rating in values:
             item_count += 1
             item_sum += rating
-            final.append((item_id, rating))
+            final.append(((item_id, user_hist), rating))
 
         yield user_id, (item_count, item_sum, final)
 
@@ -108,7 +125,7 @@ class ItemSimilarities(MRJob):
         21,70   0.1,1,[user1, user2, ...]
         70,21   0.1,1,[user1, user2, ...]
         '''
-        sum_xx, sum_xy, sum_yy, sum_x, sum_y, n, user_list = (0.0, 0.0, 0.0, 0.0, 0.0, 0, [])
+        sum_xx, sum_xy, sum_yy, sum_x, sum_y, n = (0.0, 0.0, 0.0, 0.0, 0.0, 0)
         item_pair, co_ratings_id = pair_key, lines
         item_xname, item_yname = item_pair
         for item_x, item_y, user_id in lines:
@@ -118,11 +135,10 @@ class ItemSimilarities(MRJob):
             sum_y += item_y
             sum_x += item_x
             n += 1
-            user_list.append(user_id)
 
         cos_sim = cosine(sum_xy, sqrt(sum_xx), sqrt(sum_yy))
 
-        yield (item_xname, item_yname), (cos_sim, n, user_list)
+        yield (item_xname, item_yname), (cos_sim, n)
 
     def calculate_ranking(self, item_keys, values):
         '''
@@ -136,11 +152,11 @@ class ItemSimilarities(MRJob):
         70,0.9    21,1
 
         '''
-        cos_sim, n, user_list = values
+        cos_sim, n = values
         item_x, item_y = item_keys
         if int(n) > 0:
             yield (item_x, cos_sim), \
-                     (item_y, n, user_list)
+                     (item_y, n)
 
     def top_similar_items(self, key_sim, similar_ns):
         '''
@@ -151,8 +167,8 @@ class ItemSimilarities(MRJob):
 
         '''
         item_x, cos_sim = key_sim
-        for item_y, n, user_list in similar_ns:
-            yield None, (item_x, item_y, cos_sim, n, user_list)
+        for item_y, n in similar_ns:
+            yield None, (item_x, item_y, cos_sim, n)
 
 
 if __name__ == '__main__':

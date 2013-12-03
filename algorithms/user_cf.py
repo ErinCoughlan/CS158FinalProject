@@ -25,7 +25,7 @@ def sim_cosine(ratings, p1, p2):
     numerator = sum([trunc_count1[i] * trunc_count2[i] for i in si])
 
     # sum of squares
-    sum1 = sum([trunc_count1[i] **2 for i in si])
+    sum1 = sum([trunc_count1[i]**2 for i in si])
     sum2 = sum([trunc_count2[i]**2 for i in si])
     
     # dot product calculation
