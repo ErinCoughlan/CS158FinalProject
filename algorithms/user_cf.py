@@ -25,7 +25,7 @@ def sim_cosine(ratings, p1, p2):
     numerator = sum([trunc_count1[i] * trunc_count2[i] for i in si])
 
     # sum of squares
-    sum1 = sum([trunc_count1[i] **2 for i in si])
+    sum1 = sum([trunc_count1[i]**2 for i in si])
     sum2 = sum([trunc_count2[i]**2 for i in si])
     
     # dot product calculation
@@ -134,6 +134,7 @@ def getAllRecommendations(user_song_history_train,num_recs=500):
         score_recs = get_recommendations(user_song_history_train,user,num_recs)
         recs = [s[1] for s in score_recs]
         predicted_results.append([user] + recs)
+
 
     # write predicted to file
     with open(predicted_results_file, "wb") as f:

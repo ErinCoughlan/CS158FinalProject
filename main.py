@@ -14,12 +14,13 @@ from sklearn import preprocessing
 import utils
 
 
-data_file = "data/kaggle_visible_evaluation_triplets.txt"
+data_file = "data/kaggle_visible_evaluation_triplets.csv"
 data_songs = "data/kaggle_songs.txt"
 data_users = "data/kaggle_users.txt"
 data_song_track = "data/taste_profile_song_to_tracks.txt"
 data_subset_song_track = "data/subset_unique_tracks.txt"
 data_analysed_songs = "data/analyzed_data_subset.csv"
+#data_analysed_songs = "data/analyzed_data_active_subset.txt"
 
 
 def getData():
@@ -58,18 +59,23 @@ if __name__ == '__main__':
 
     # truncate our song data, only run once to generate txt
     # utils.getSmallerSubset(user_song_history,1000)
+    # utils.getActiveUserSubset(user_song_history,1000)
 
     # grab our song data from echonest
     songDataFull = getAnalyzedData()
+    songDataFull = [item[:-3] for item in songDataFull]
 
     # user_song_history of first 1000 users
-    user_song_history_subset = utils.truncateDict(user_song_history, 1000)
+    # user_song_history_subset = utils.truncateDict(user_song_history, 1000)
+    user_song_history_subset = user_song_history
+    # user_song_history of active 1000 users
+    #user_song_history_subset = utils.truncateActiveDict(user_song_history, 1000)
 
     # take out the first index of each sublist (song id)
-    songData = [item[1:] for item in songDataFull]    
+    # songData = [item[1:] for item in songDataFull]    
 
     # process the datasets in case of categorical values
-    songData, _ = utils.process(songData)
+    # songData, _ = utils.process(songData)
     
     # for kmeans, take out a random 50% of songs from each user_song_history
     user_song_history_test = {}
@@ -81,10 +87,10 @@ if __name__ == '__main__':
     for user,song_list in user_song_history_test.items():
         user_song_history_train[user] = [song for song in user_song_history_subset[user] if song not in user_song_history_test[user]]
 
+    # songData = np.asarray(songData).astype(np.float)
+    # songDataNorm = preprocessing.normalize(songData).tolist()
+    # songDataFullNorm = [[songDataFull[i][0]] + songDataNorm[i] for i in range(len(songDataFull))]
 
-    # songData = np.asarray(songData)
-    # songDataNorm = preprocessing.normalize(songData)
-    # songDataFullNorm = [songDataFull[i][0] + songDataNorm[i] for i in range(len(songDataFull))]
 
     ###### Kmeans ######
 
@@ -95,5 +101,6 @@ if __name__ == '__main__':
 
 
     ##### User_CF ######
-    user_cf.getAllRecommendations(user_song_history_test)
+    user_cf.getAllRecommendations(user_song_history_train)
+
 

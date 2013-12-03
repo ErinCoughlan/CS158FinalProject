@@ -8,29 +8,32 @@ import pdb
 predicted_results = "data/results/kmeans_predict.csv"
 test_results = "data/results/kmeans_test.csv"
 
-def getRecs(learner, num_recs, centroid, song_data_full, song_counts):
+def getRecs(learner, num_recs, centroid, song_data_full, song_counts, song_list):
     ''' returns the top-n recommendations for a given user's
     centroid based on the learner we give it'''
 
     cluster = learner.predict(centroid)
-    print cluster
+
+    user_songs = [s[0] for s in song_list]
 
     # find all songs in cluster
     cluster_songs = []
     for i, song in enumerate(song_data_full):
         song_id = song[0]
-        if learner.labels_[i] == cluster:
+        if learner.labels_[i] in cluster:
             cluster_songs.append(song_id)
+
 
     # generate counters of total song counts and cluster song counts
     cluster_song_counts = Counter()
     total_song_counts = Counter()
     for user, songs in song_counts.items():
-        for [song,count] in songs:            
-            if song in cluster_songs:
-                cluster_song_counts[song] += count
-            else:
-                total_song_counts[song] += count
+        for [song,count] in songs:
+            if song not in user_songs: # Elminate songs the user already heard of          
+                if song in cluster_songs:
+                    cluster_song_counts[song] += count
+                else:
+                    total_song_counts[song] += count
 
     # filter and order songs based on play counts
     song_recs = []
@@ -53,7 +56,7 @@ def getCentroid(song_list, song_data):
     ''' returns the centroid coordinates of a given user,
     where we pass in a partial listening history '''
 
-    kmeans = KMeans(init='k-means++', n_clusters=1, n_init=10)
+    kmeans = KMeans(init='k-means++', n_clusters=2, n_init=10)
 
     song_data_dict = {}
     for item in song_data:
@@ -64,7 +67,9 @@ def getCentroid(song_list, song_data):
     song_data_filtered = []
     for [song_id,count] in song_list:
         if song_id in song_data_dict.keys():
-            song_data_filtered.append(song_data_dict[song_id])
+            # Weight data towards the more listened to  (more liked) songs
+            for _ in range(count):
+                song_data_filtered.append(song_data_dict[song_id])
         else:
             num_song_not_found += 1
 
@@ -109,7 +114,7 @@ def testKmeans(learner, song_data_full, user_song_test_data, user_song_train_dat
         # feed centroid into learner and find top n recommendations
         centroid = getCentroid(song_history, song_data_full)
         # get similar songs to centroid and append to results
-        results.append([user] + getRecs(learner,num_recs,centroid,song_data_full,user_song_train_data))
+        results.append([user] + getRecs(learner,num_recs,centroid,song_data_full,user_song_train_data,song_history))
 
     
     # write train and test to file
