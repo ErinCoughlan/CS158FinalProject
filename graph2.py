@@ -28,4 +28,5 @@ plt.xlabel('Number of Clusters')
 
 plt.plot(clusters, results, 'ro')
 plt.plot(xs, ys)
-plt.show()
+#plt.show()
+plt.savefig('data/results/cluster_results.png')

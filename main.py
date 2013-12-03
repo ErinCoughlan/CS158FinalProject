@@ -19,8 +19,8 @@ data_songs = "data/kaggle_songs.txt"
 data_users = "data/kaggle_users.txt"
 data_song_track = "data/taste_profile_song_to_tracks.txt"
 data_subset_song_track = "data/subset_unique_tracks.txt"
-data_analysed_songs = "data/analyzed_data_subset.csv"
-#data_analysed_songs = "data/analyzed_data_active_subset.txt"
+#data_analysed_songs = "data/analyzed_data_subset.csv"
+data_analysed_songs = "data/analyzed_data_active_subset.txt"
 
 
 def getData():
@@ -66,10 +66,10 @@ if __name__ == '__main__':
     songDataFull = [item[:-3] for item in songDataFull]
 
     # user_song_history of first 1000 users
-    user_song_history_subset = utils.truncateDict(user_song_history, 1000)
+    #user_song_history_subset = utils.truncateDict(user_song_history, 1000)
 
     # user_song_history of active 1000 users
-    #user_song_history_subset = utils.truncateActiveDict(user_song_history, 1000)
+    user_song_history_subset = utils.truncateActiveDict(user_song_history, 1000)
 
     # take out the first index of each sublist (song id)
     songData = [item[1:] for item in songDataFull]    
