@@ -66,10 +66,7 @@ if __name__ == '__main__':
     # songDataFull = [item[:-3] for item in songDataFull]
 
     # user_song_history of first 1000 users
-    # user_song_history_subset = utils.truncateDict(user_song_history, 1000)
-    user_song_history_subset = truncateDict(user_song_history, 1000)
-    # user_song_history of active 1000 users
-    #user_song_history_subset = utils.truncateActiveDict(user_song_history, 1000)
+    user_song_history_subset = utils.truncateDict(user_song_history, 1000)
 
     # take out the first index of each sublist (song id)
     # songData = [item[1:] for item in songDataFull]    

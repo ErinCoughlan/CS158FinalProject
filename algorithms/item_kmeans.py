@@ -31,9 +31,9 @@ def getRecs(learner, num_recs, centroid, song_data_full, song_counts, song_list)
         for [song,count] in songs:
             if song not in user_songs: # Elminate songs the user already heard of          
                 if song in cluster_songs:
-                    cluster_song_counts[song] += count
+                    cluster_song_counts[song] += 1
                 else:
-                    total_song_counts[song] += count
+                    total_song_counts[song] += 1
 
     # filter and order songs based on play counts
     song_recs = []
@@ -95,7 +95,7 @@ def writeTestData(user_song_test_data):
         writer.writerows(results)
 
 
-def trainKmeans(train_data, num_clusters=100):
+def trainKmeans(train_data, num_clusters=20):
     ''' returns a kmeans learner based off of train data '''
 
     #TODO: experiment with other k-means impl
