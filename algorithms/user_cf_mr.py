@@ -3,7 +3,7 @@
 ''' User-based Collaborative Filtering '''
 
 from mrjob.job import MRJob
-from similarity import correlation, jaccard, cosine, regularized_correlation
+# from similarity import correlation, jaccard, cosine, regularized_correlation
 from math import sqrt
 import pdb
 
@@ -48,7 +48,7 @@ class UserSimilarities(MRJob):
 
     def group_by_item_rating(self, key, line):
 
-        user_id, item_id, rating = line.split(',')
+        user_id, item_id, rating = line.split('\t')
 
         yield  user_id, (item_id, float(rating))
 
@@ -114,30 +114,31 @@ class UserSimilarities(MRJob):
     def top_recommendations(self, key_sim, similar_ns):
 
         user_x, cos_sim = key_sim
+
         for user_y, n in similar_ns:
 
             totals = {}
             sim_sums = {}
+            print cos_sim
+            if user_y[0] != user_x[0]:
+                for rating in user_y[1]:
+                    items_x = [x[0] for x in user_x[1]]
+                    if rating[0] not in items_x:
+                        # if not, compute totals and sim_sums for each item
+                        totals.setdefault(rating[0],0)
+                        totals[rating[0]] += cos_sim * rating[1]
 
-            # pdb.set_trace()
-            for rating in user_y[1]:
-                items_x = [x[0] for x in user_x[1]]
-                if rating[0] not in items_x:
-                    # if not, compute totals and sim_sums for each item
-                    totals.setdefault(rating[0],0)
-                    totals[rating[0]] += cos_sim * rating[1]
+                        sim_sums.setdefault(rating[0],0)
+                        sim_sums[rating[0]] += cos_sim
 
-                    sim_sums.setdefault(rating[0],0)
-                    sim_sums[rating[0]] += cos_sim
+                # create the normalized list
+                rankings = [(total/sim_sums[item],item) for item,total in totals.items()]
 
-            # create the normalized list
-            rankings = [(total/sim_sums[item],item) for item,total in totals.items()]
+                # return the sorted list
+                rankings.sort()
+                rankings.reverse()        
 
-            # return the sorted list
-            rankings.sort()
-            rankings.reverse()        
-
-            top_recs = [x[1] for x in rankings]
+                top_recs = [x[1] for x in rankings]
 
             yield user_x[0],top_recs
 
@@ -155,6 +156,15 @@ class UserSimilarities(MRJob):
             recs.update(all_recs.pop(0))
         yield None, recs
 
+def cosine(dot_product, rating_norm_squared, rating2_norm_squared):
+    '''
+    The cosine between two vectors A, B
+       dotProduct(A, B) / (norm(A) * norm(B))
+    '''
+    numerator = dot_product
+    denominator = rating_norm_squared * rating2_norm_squared
+
+    return (numerator / (float(denominator))) if denominator else 0.0
 
 if __name__ == '__main__':
     UserSimilarities.run()

@@ -1,6 +1,7 @@
 from sklearn import preprocessing
 from collections import defaultdict
 from collections import Counter
+from algorithms import item_kmeans, user_cf
 import random
 import csv
 import pdb
@@ -186,7 +187,7 @@ if __name__ == '__main__':
     # grab user, song data
     user_song_history, songCount = getData()
 
-    user_song_history_subset = truncateDict(user_song_history, 20000)
+    user_song_history_subset = truncateDict(user_song_history, 10000)
 
     user_song_history_test = {}
     for user,song_list in user_song_history_subset.items():
@@ -199,6 +200,13 @@ if __name__ == '__main__':
             if song not in user_song_history_test[user]:
                 user_song_history_train.append([user] + song)
              
+
+    user_song_history_train_dict = {}
+    for user,song_list in user_song_history_test.items():
+        user_song_history_train_dict[user] = [song for song in user_song_history_subset[user] if song not in user_song_history_test[user]]
+
     writeTestData(user_song_history_test)
     writeTrainData(user_song_history_train)
+
+    user_cf.getAllRecommendations(user_song_history_train_dict)  
 

@@ -62,12 +62,12 @@ if __name__ == '__main__':
     # utils.getActiveUserSubset(user_song_history,1000)
 
     # grab our song data from echonest
-    songDataFull = getAnalyzedData()
-    songDataFull = [item[:-3] for item in songDataFull]
+    # songDataFull = getAnalyzedData()
+    # songDataFull = [item[:-3] for item in songDataFull]
 
     # user_song_history of first 1000 users
     # user_song_history_subset = utils.truncateDict(user_song_history, 1000)
-    user_song_history_subset = user_song_history
+    user_song_history_subset = truncateDict(user_song_history, 1000)
     # user_song_history of active 1000 users
     #user_song_history_subset = utils.truncateActiveDict(user_song_history, 1000)
 

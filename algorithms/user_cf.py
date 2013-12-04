@@ -133,7 +133,8 @@ def getAllRecommendations(user_song_history_train,num_recs=500):
     for user, song_history in user_song_history_train.items():
         score_recs = get_recommendations(user_song_history_train,user,num_recs)
         recs = [s[1] for s in score_recs]
-        predicted_results.append([user] + recs)
+        if len(recs) > 0:
+            predicted_results.append(recs)
 
 
     # write predicted to file
